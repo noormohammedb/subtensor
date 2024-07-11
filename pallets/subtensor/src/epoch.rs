@@ -4,6 +4,12 @@ use frame_support::IterableStorageDoubleMap;
 use sp_std::vec;
 use substrate_fixed::types::{I32F32, I64F64, I96F32};
 
+#[derive(Debug, Encode, Decode)]
+pub enum EpochResult<T: Config> {
+    EmissionTuple(Vec<(T::AccountId, u64, u64)>),
+    IncentiveValue(Vec<I32F32>),
+}
+
 impl<T: Config> Pallet<T> {
     /// Calculates reward consensus and returns the emissions for uids/hotkeys in a given `netuid`.
     /// (Dense version used only for testing purposes.)
@@ -352,8 +358,7 @@ impl<T: Config> Pallet<T> {
     ///     - Print debugging outputs.
     ///
     #[allow(clippy::indexing_slicing)]
-    // pub fn epoch(netuid: u16, rao_emission: u64) -> Vec<(T::AccountId, u64, u64)> {
-    pub fn epoch(netuid: u16) -> Vec<(T::AccountId, u64, u64)> {
+    pub fn epoch(netuid: u16, incentive_flag: Option<bool>) -> EpochResult<T> {
         let rao_emission: u64 = PendingEmission::<T>::get(netuid);
 
         // Get subnetwork size.
@@ -690,17 +695,29 @@ impl<T: Config> Pallet<T> {
                 }
             });
 
-        // Emission tuples ( hotkeys, server_emission, validator_emission )
-        hotkeys
-            .into_iter()
-            .map(|(uid_i, hotkey)| {
-                (
-                    hotkey,
-                    server_emission[uid_i as usize],
-                    validator_emission[uid_i as usize],
+        match incentive_flag {
+            Some(true) => EpochResult::IncentiveValue(
+                Incentive::<T>::get(netuid)
+                    .into_iter()
+                    .map(|data| I32F32::from_num(data))
+                    .collect::<Vec<I32F32>>(),
+            ),
+            _ => {
+                // Emission tuples ( hotkeys, server_emission, validator_emission )
+                EpochResult::EmissionTuple(
+                    hotkeys
+                        .into_iter()
+                        .map(|(uid_i, hotkey)| {
+                            (
+                                hotkey,
+                                server_emission[uid_i as usize],
+                                validator_emission[uid_i as usize],
+                            )
+                        })
+                        .collect(),
                 )
-            })
-            .collect()
+            }
+        }
     }
 
     pub fn get_float_rho(netuid: u16) -> I32F32 {

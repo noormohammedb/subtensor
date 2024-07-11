@@ -1551,8 +1551,8 @@ impl_runtime_apis! {
             result.encode()
         }
 
-        fn get_subtensor_epoch(netuid: u16) -> Vec<u8>{
-            SubtensorModule::epoch(netuid).encode()
+        fn get_subtensor_epoch(netuid: u16 , incentive_flag: Option<bool>) -> Vec<u8>{
+            SubtensorModule::epoch(netuid, incentive_flag).encode()
         }
 
         fn get_subnet_hyperparams(netuid: u16) -> Vec<u8> {

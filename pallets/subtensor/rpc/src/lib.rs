@@ -53,7 +53,11 @@ pub trait SubtensorCustomApi<BlockHash> {
     fn get_network_lock_cost(&self, at: Option<BlockHash>) -> RpcResult<u64>;
 
     #[method(name = "subtensor_epoch")]
-    fn get_subtensor_epoch(&self, netuid: Option<u16>) -> RpcResult<Vec<u8>>;
+    fn get_subtensor_epoch(
+        &self,
+        netuid: Option<u16>,
+        incentive_flag: Option<bool>,
+    ) -> RpcResult<Vec<u8>>;
 }
 
 pub struct SubtensorCustom<C, P> {
@@ -227,11 +231,15 @@ where
         })
     }
 
-    fn get_subtensor_epoch(&self, netuid: Option<u16>) -> RpcResult<Vec<u8>> {
+    fn get_subtensor_epoch(
+        &self,
+        netuid: Option<u16>,
+        incentive_flag: Option<bool>,
+    ) -> RpcResult<Vec<u8>> {
         let api = self.client.runtime_api();
         let at = self.client.info().best_hash;
 
-        api.get_subtensor_epoch(at, netuid.unwrap_or_default())
+        api.get_subtensor_epoch(at, netuid.unwrap_or_default(), incentive_flag)
             .map_err(|e| {
                 Error::RuntimeError(format!("Unable to get subtensor epoch: {:?}", e)).into()
             })

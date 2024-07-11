@@ -1551,6 +1551,10 @@ impl_runtime_apis! {
             result.encode()
         }
 
+        fn get_subtensor_epoch(netuid: u16) -> Vec<u8>{
+            SubtensorModule::epoch(netuid).encode()
+        }
+
         fn get_subnet_hyperparams(netuid: u16) -> Vec<u8> {
             let _result = SubtensorModule::get_subnet_hyperparams(netuid);
             if _result.is_some() {

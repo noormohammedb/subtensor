@@ -352,7 +352,10 @@ impl<T: Config> Pallet<T> {
     ///     - Print debugging outputs.
     ///
     #[allow(clippy::indexing_slicing)]
-    pub fn epoch(netuid: u16, rao_emission: u64) -> Vec<(T::AccountId, u64, u64)> {
+    // pub fn epoch(netuid: u16, rao_emission: u64) -> Vec<(T::AccountId, u64, u64)> {
+    pub fn epoch(netuid: u16) -> Vec<(T::AccountId, u64, u64)> {
+        let rao_emission: u64 = PendingEmission::<T>::get(netuid);
+
         // Get subnetwork size.
         let n: u16 = Self::get_subnetwork_n(netuid);
         log::trace!("n: {:?}", n);
